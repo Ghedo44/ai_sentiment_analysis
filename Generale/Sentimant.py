@@ -20,7 +20,7 @@ auth.set_access_token(access_token, access_token_secret)
 # Instantiate API
 api = tw.API(auth, wait_on_rate_limit=True)
 
-hashtag = "#presidentialdebate"
+hashtag = "#GME"
 query = tw.Cursor(api.search, q=hashtag).items(1000)
 tweets = [{'Tweet':tweet.text, 'Timestamp':tweet.created_at} for tweet in query]
 print(tweets)
@@ -28,8 +28,7 @@ print(tweets)
 df = pd.DataFrame.from_dict(tweets)
 df.head()
 
-trump_handle = ['DonaldTrump', 'Donald Trump', 'Donald', 'Trump', 'Trump\'s']
-biden_handle = ['JoeBiden', 'Joe Biden', 'Joe', 'Biden', 'Biden\'s']
+gme_handle = ['gme', 'GME', 'Gamestop', 'gamestop', 'GME\'s']
 
 def identify_subject(tweet, refs):
     flag = 0
@@ -38,9 +37,7 @@ def identify_subject(tweet, refs):
             flag = 1
     return flag
 
-df['Trump'] = df['Tweet'].apply(lambda x: identify_subject(x, trump_handle))
-df['Biden'] = df['Tweet'].apply(lambda x: identify_subject(x, biden_handle))
-df.head(10)
+df['GME'] = df['Tweet'].apply(lambda x: identify_subject(x, gme_handle))
 
 # Import stopwords
 import nltk
@@ -72,29 +69,21 @@ print('Cleaned and lemmatized review\n', df['Processed Tweet'][0])
 # Calculate polarity
 df['polarity'] = df['Processed Tweet'].apply(lambda x: TextBlob(x).sentiment[0])
 df['subjectivity'] = df['Processed Tweet'].apply(lambda x: TextBlob(x).sentiment[1])
-df[['Processed Tweet', 'Biden', 'Trump', 'polarity', 'subjectivity']].head()
 
-display(df[df['Trump']==1][['Trump','polarity','subjectivity']].groupby('Trump').agg([np.mean, np.max, np.min, np.median]))
-df[df['Biden']==1][['Biden','polarity','subjectivity']].groupby('Biden').agg([np.mean, np.max, np.min, np.median])
+#display(df[df['Trump']==1][['Trump','polarity','subjectivity']].groupby('Trump').agg([np.mean, np.max, np.min, np.median]))
+df[df['GME']==1][['GME','polarity','subjectivity']].groupby('GME').agg([np.mean, np.max, np.min, np.median])
 
-biden = df[df['Biden']==1][['Timestamp', 'polarity']]
-biden = biden.sort_values(by='Timestamp', ascending=True)
-biden['MA Polarity'] = biden.polarity.rolling(10, min_periods=3).mean()
+gme = df[df['GME']==1][['Timestamp', 'polarity']]
+gme = gme.sort_values(by='Timestamp', ascending=True)
+gme['MA Polarity'] = gme.polarity.rolling(10, min_periods=3).mean()
 
-trump = df[df['Trump']==1][['Timestamp', 'polarity']]
-trump = trump.sort_values(by='Timestamp', ascending=True)
-trump['MA Polarity'] = trump.polarity.rolling(10, min_periods=3).mean()
-
-trump.head()
 
 repub = 'red'
 demo = 'blue'
-fig, axes = plt.subplots(2, 1, figsize=(13, 10))
+fig, axes = plt.subplots(1, 1, figsize=(13, 10))
 
-axes[0].plot(biden['Timestamp'], biden['MA Polarity'])
-axes[0].set_title("\n".join(["Biden Polarity"]))
-axes[1].plot(trump['Timestamp'], trump['MA Polarity'], color='red')
-axes[1].set_title("\n".join(["Trump Polarity"]))
+axes.plot(gme['Timestamp'], gme['MA Polarity'])
+axes.set_title("\n".join(["GME Polarity"]))
 
 fig.suptitle("\n".join(["Presidential Debate Analysis"]), y=0.98)
 

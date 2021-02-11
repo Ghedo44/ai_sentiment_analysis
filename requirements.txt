@@ -3,3 +3,7 @@ pandas
 matplotlib
 nltk
 textblob
+pycountry
+wordcloud
+langdetect
+sklearn
